@@ -1,0 +1,13 @@
+[Unit]
+Description=CAPTCHA Gym public tunnel (localhost.run reverse tunnel)
+After=network.target captcha-gym.service
+Wants=captcha-gym.service
+
+[Service]
+Type=simple
+ExecStart=/home/hatch/workspace/captcha-gym/tools/tunnel.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

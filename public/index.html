@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Acme Store — checkout</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site-nav">
+  <strong>Acme Store</strong>
+  <nav><a href="/">Home</a> · <a href="/about">About</a> · <a href="/article">Delivery info</a></nav>
+</header>
+<main>
+  <h1>Checkout</h1>
+  <p>Your order is almost complete. This page is protected by CAPTCHA Gym —
+     complete the verification below to continue.</p>
+
+  <div id="widget" class="widget">
+    <button id="checkbox" class="checkbox" data-trace="checkbox" aria-label="I am not a robot"></button>
+    <span class="widget-label">I'm not a robot</span>
+    <span id="spinner" class="spinner" hidden></span>
+    <div class="widget-brand">CAPTCHA Gym<small>practice verification</small></div>
+  </div>
+  <p id="widget-msg" class="widget-msg"></p>
+
+  <div id="popover" class="popover" hidden>
+    <div class="popover-head"><p id="instruction"></p></div>
+    <div id="grid" class="grid"></div>
+    <div class="popover-foot">
+      <span id="challenge-msg" class="challenge-msg"></span>
+      <button id="skipBtn" data-trace="skip">Skip</button>
+      <button id="verifyBtn" data-trace="verify">Verify</button>
+    </div>
+  </div>
+
+  <div id="tokenPanel" class="token-panel" hidden>
+    <p>✔ Verification complete.</p>
+    <p>Gym token: <code id="tokenValue"></code></p>
+    <button id="tokenCheckBtn">Simulate host token check</button>
+    <span id="tokenCheckResult"></span>
+    <p class="note">Host sites verify the token once, server-side. Tokens expire
+       120 seconds after they are minted and cannot be used twice.</p>
+  </div>
+</main>
+<footer>
+  <p class="note">CAPTCHA Gym is a local, self-hosted practice harness for our own
+  agents. Its risk scorer is an interpretable mock — the weights are design
+  choices, not Google's (Google's are unpublished). Its corpus is finite and
+  self-made, and tokens minted here are meaningless outside this page.</p>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>

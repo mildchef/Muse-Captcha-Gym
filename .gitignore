@@ -1,0 +1,19 @@
+# Runtime data — the live training record. Curated exports for publication
+# are produced deliberately (see TRAINING_LOG.md); the raw logs stay local.
+data/*.jsonl
+data/*.log
+data/shots/
+
+# Ephemeral tunnel address (changes on every tunnel start)
+LIVE_URL.txt
+
+# Generated corpus binaries (~340 MB) — rebuild with the tools in tools/
+# (see "Corpus" in README.md). Manifests and credits are tracked.
+corpus/**/*.png
+corpus/**/*.jpg
+corpus/**/*.jpeg
+
+# Local environment / OS noise
+.env
+.DS_Store
+*.tmp
