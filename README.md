@@ -70,11 +70,12 @@ node server.js          # listens on port 8931
   rejected on license alone), 6 classes, per-image provenance in
   `corpus/typeB/manifest_photos.jsonl` and `CREDITS.md`.
 
-Corpus binaries (~340 MB) are not tracked in git; rebuild them with
-`tools/build_corpus.js`, `tools/build_corpus_typeb.js`, and
-`tools/build_photo_corpus.js` (the last needs the COCO val2017 annotations).
-Manifests — including ground truth, for reproducibility — are tracked; the
-leak audit guarantees they never reach a player through the game channel.
+Corpus binaries (~340 MB) and the generated corpus manifests are not
+tracked in git; rebuild both with `tools/build_corpus.js`,
+`tools/build_corpus_typeb.js`, and `tools/build_photo_corpus.js` (the last
+needs the COCO val2017 annotations). The manifests carry the ground truth;
+the leak audit guarantees it never reaches a player through the game
+channel. Photo-corpus provenance is summarized in `CREDITS.md`.
 
 ## Training system
 
