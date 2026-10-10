@@ -8,7 +8,7 @@ data/shots/
 LIVE_URL.txt
 
 # Generated corpus binaries (~340 MB) — rebuild with the tools in tools/
-# (see "Corpus" in README.md). Manifests and credits are tracked.
+# (see "Corpus" in README.md).
 corpus/**/*.png
 corpus/**/*.jpg
 corpus/**/*.jpeg
