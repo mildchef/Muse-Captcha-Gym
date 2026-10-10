@@ -12,6 +12,9 @@ LIVE_URL.txt
 corpus/**/*.png
 corpus/**/*.jpg
 corpus/**/*.jpeg
+# Generated corpus manifests (outputs of the builders in tools/; the photo
+# manifest's provenance is summarized in CREDITS.md)
+corpus/**/*.jsonl
 
 # Local environment / OS noise
 .env
