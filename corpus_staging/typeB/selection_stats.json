@@ -1,0 +1,41 @@
+{
+  "funnel": {},
+  "perClass": {
+    "train": {
+      "imagesWithInstances": 157,
+      "rejectedLicense": 118,
+      "admittedLicenseIds": {
+        "4": 27,
+        "5": 6
+      },
+      "rejectedGeometry": 0,
+      "rejectedLiveOverlap": 6,
+      "candidates": 33,
+      "selected": 30
+    },
+    "boat": {
+      "imagesWithInstances": 121,
+      "rejectedLicense": 86,
+      "admittedLicenseIds": {
+        "4": 23,
+        "5": 10,
+        "7": 1
+      },
+      "rejectedGeometry": 5,
+      "rejectedLiveOverlap": 1,
+      "candidates": 29,
+      "selected": 29
+    }
+  },
+  "emitted": 58,
+  "downloadFailures": 0,
+  "licenseDistribution": {
+    "Attribution License": 45,
+    "Attribution-ShareAlike License": 12,
+    "No known copyright restrictions": 1
+  },
+  "containing": {
+    "boat": 29,
+    "train": 30
+  }
+}

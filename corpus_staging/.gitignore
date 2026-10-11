@@ -1,0 +1,4 @@
+# COCO source data (annotations zip + extracted JSON, ~270 MB) is build
+# input, not a project artifact. Re-download:
+#   curl -O http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+_src/
