@@ -58,7 +58,20 @@ crossing into a tile makes THAT tile a car tile. Name the owner of the
 fragment before clicking it. If you cannot name the owner, apply rule 1
 only when the fragment's shape clearly belongs to the target class.
 
-## v2.1 — 2026-10-10 (drafted from the v2 validation data; NOT yet validated)
+## v2.1 — 2026-10-10 (drafted from the v2 validation data; REVERTED 2026-10-10 after Run #2)
+
+**Governance decision (Run #2, 2026-10-10): REVERTED — play returns to v2.**
+v2.1 final photo line at validation (10 scored attempts): TP37 / FP1 / FN7 —
+precision .974, recall .841, exact-board 5/10, expiries 0. Versus v2
+(P 1.000 / R .833 / exact 6/8 / expiries 2): precision is worse (the batch #1
+FP1 stands unrepaired), exact-board is worse, and the whole-instance FN mode
+it was written to fix did not improve (recall flat; this run's 5 photo FNs
+were again whole-instance/region misses, incl. one empty submission on a car
+board). Its one clear win — zero expiries under rule 5's clock protocol —
+does not meet the promote bar ("not worse on precision AND better or equal
+on the target failure mode"). Rule 5 may be re-proposed in a future candidate
+drafted from accumulated data; v2.1 as a whole is not played again. This is
+candidate failure #1 for the stall brake (3 consecutive = fire).
 
 Validation it answers to (photo corpus, brief v2): 8 scored attempts,
 TP30 / FP0 / FN6 — precision 1.000, recall .833, exact-board 6/8,
