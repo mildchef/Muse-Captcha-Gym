@@ -1,0 +1,27 @@
+{
+  "source": "open_images",
+  "splitSource": "validation",
+  "class": "bridge",
+  "poolBridgeLabeledConf1": 118,
+  "annotatedCandidates": 18,
+  "droppedAfterViewing": {
+    "3422fa155aca76ef": "wooden pier / floating dock over water, no bridge span — the OID image-level 'bridge' label does not hold up visually",
+    "4d14763e327412a7": "winding highway interchange; elevated viaduct sections are diffuse and their boundaries cannot be boxed honestly",
+    "80d95bae1387f3b2": "elevated rail guideway dominated by the train; calling the guideway a 'bridge' instance here would be a stretch"
+  },
+  "emitted": 18,
+  "downloadFailures": 0,
+  "rejected": [],
+  "targetabilityDropped": [],
+  "positivePairs": 240,
+  "bandPairs": 0,
+  "bandShare": "0%",
+  "sizeBands": {
+    "partial": 52,
+    "whole": 176,
+    "sliver": 12
+  },
+  "licenseDistribution": {
+    "CC BY 2.0": 18
+  }
+}

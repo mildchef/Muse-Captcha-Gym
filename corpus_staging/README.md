@@ -105,3 +105,54 @@ Rebuild:
 node build_oi_pilot.js        # images fetched from the CVDF S3 mirror
 node validate_oi_staging.js
 ```
+
+---
+
+# Addendum (2026-10-10, dev track): bridge pilot — hand-annotated boxes
+
+Bridge was the last class gap with real-world prompt evidence
+(FIELD_COMPARISON.md F1), and OID grounds it only as an image-level
+label. This set closes it the way the spike report recommended: OID's
+own license-clean bridge photos + hand-drawn boxes.
+
+- `build_bridge_pilot.js` — builder. Selection: OID validation images
+  with a human-verified image-level bridge label (Confidence=1;
+  **118** in the pool), passed through the OI pilot's identical gates
+  (per-image license — all 118 record CC BY 2.0 — rotation, Flickr
+  disjointness vs live + holdout + OI pilot; 0 rejected). 21 were
+  viewed for annotation; **3 dropped after viewing** with reasons
+  recorded in `bridge_annotations.json` (a pier/dock mislabel, a
+  diffuse highway interchange, a train-dominated rail guideway).
+- `bridge_annotations.json` — the annotation record: per-scene boxes +
+  notes, method, and the dropped set. Boxes were estimated by a
+  single agent annotator from viewing each photo (bridge structure =
+  span/deck/towers/piers; water, sky, reflections and unrelated
+  skyline excluded), at ~±0.02 normalized precision.
+- `typeB/manifest_photos_bridge_pilot.jsonl` — **18 scenes, 20 boxes**
+  (two scenes carry two instances), `typeB/photos/b_*` images + owner
+  masks, `typeB/selection_stats_bridge.json`. Profile: 240 positive
+  (tile, bridge) pairs — whole 176 · partial 52 · sliver 12 — band
+  share **0%**.
+- `validate_bridge_staging.js` — manifest↔mask consistency + the
+  hand-annotation honesty checks: **PASSED, 0 failures**.
+
+**Honesty flags (read before deploying):** every line is stamped
+`ground_truth_basis: "bbox_hand"` and `annotators: 1`, `kappa: null` —
+there is no second annotator and no inter-annotator agreement to
+compute; the boxes are one agent's estimates, not OID- or
+human-verified localizations. A bbox also includes background a
+polygon would exclude. This set therefore trains **detection and
+enumeration** of bridge, not sliver discipline (its 0% band share says
+the same thing numerically). Split is `staging_oi`, unservable by the
+live pools until an era-boundary deployment relabels it — recipe as
+for the OI pilot (spike report), appending this manifest and copying
+`typeB/photos/b_*`; the `bbox_hand` stamp keeps these scenes
+distinguishable in every later metric cut.
+
+Rebuild:
+
+```sh
+# OID files as above, plus v5/validation-annotations-human-imagelabels.csv in _src/oi/
+node build_bridge_pilot.js    # boxes come from bridge_annotations.json
+node validate_bridge_staging.js
+```
