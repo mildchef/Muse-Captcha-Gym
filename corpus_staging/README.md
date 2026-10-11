@@ -71,3 +71,37 @@ mkdir -p _src && unzip annotations_trainval2017.zip 'annotations/instances_val20
 node build_holdout_photos.js   # images fetched individually from images.cocodataset.org
 node validate_staging.js       # + node ../tools/validate_corpus.js typeB/photos
 ```
+
+---
+
+# Addendum (2026-10-10, dev track): Open Images pilot
+
+The Open Images spike ran — full findings in `OPEN_IMAGES_SPIKE.md`.
+Outcome: OID localizes only **stairs, palm_tree, taxi** of the eight
+COCO-missing classes (boxes; no masks for any of the eight), and a
+third staged set now sits beside the holdout:
+
+- `build_oi_pilot.js` — builder (per-image license gate on OID's own
+  License column; boxes rasterized with the SPEC §4 derivation;
+  `ground_truth_basis: "bbox"` stamped on every line).
+- `typeB/manifest_photos_oi_pilot.jsonl` — 60 scenes (20 containing
+  each of stairs / palm_tree / taxi), `typeB/photos/o_*` images +
+  owner masks, `typeB/selection_stats_oi.json` — the selection funnel.
+- `validate_oi_staging.js` — the same manifest↔mask consistency
+  validation, OI flavor: **PASSED, 0 failures**.
+
+Scenes carry split **`staging_oi`** — like `holdout_final`, a value the
+live play pools (train|eval) never serve, so the pilot cannot leak into
+training before an era-boundary deployment relabels it (recipe in the
+spike report). Source CSVs (~43 MB of OID metadata) live in `_src/oi/`,
+gitignored — regenerable from the URLs tabulated in the spike report.
+Bridge/chimney/crosswalk/mountain/tractor remain ungrounded from any
+current source (see the spike report for the blocker and next-best).
+
+Rebuild:
+
+```sh
+# download the five OID files tabulated in OPEN_IMAGES_SPIKE.md into _src/oi/
+node build_oi_pilot.js        # images fetched from the CVDF S3 mirror
+node validate_oi_staging.js
+```

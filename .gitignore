@@ -16,6 +16,13 @@ corpus/**/*.jpeg
 # manifest's provenance is summarized in CREDITS.md)
 corpus/**/*.jsonl
 
+# Downloaded Open Images metadata CSVs (~43 MB) — regenerable from the
+# URLs tabulated in corpus_staging/OPEN_IMAGES_SPIKE.md
+corpus_staging/_src/oi/
+
+# Staged dev-server runtime data (dev_staging/ smoke/e2e runs)
+dev_staging/data/
+
 # Local environment / OS noise
 .env
 .DS_Store

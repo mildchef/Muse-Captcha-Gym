@@ -1,0 +1,55 @@
+{
+  "source": "open_images",
+  "splitSource": "validation",
+  "perClass": {
+    "stairs": {
+      "imagesWithBoxes": 36,
+      "boxesTotal": 45,
+      "boxesExcludedGroupOf": 2,
+      "boxesExcludedDepiction": 0,
+      "rejectedLicense": 0,
+      "rejectedRotation": 0,
+      "rejectedLiveOverlap": 0,
+      "rejectedGeometry": 3,
+      "candidates": 32,
+      "selected": 20
+    },
+    "palm_tree": {
+      "imagesWithBoxes": 122,
+      "boxesTotal": 380,
+      "boxesExcludedGroupOf": 91,
+      "boxesExcludedDepiction": 3,
+      "rejectedLicense": 0,
+      "rejectedRotation": 3,
+      "rejectedLiveOverlap": 0,
+      "rejectedGeometry": 4,
+      "candidates": 88,
+      "selected": 20
+    },
+    "taxi": {
+      "imagesWithBoxes": 36,
+      "boxesTotal": 100,
+      "boxesExcludedGroupOf": 3,
+      "boxesExcludedDepiction": 0,
+      "rejectedLicense": 0,
+      "rejectedRotation": 0,
+      "rejectedLiveOverlap": 0,
+      "rejectedGeometry": 3,
+      "candidates": 31,
+      "selected": 20
+    }
+  },
+  "licenseGate": {
+    "https://creativecommons.org/licenses/by/2.0/": 194
+  },
+  "emitted": 60,
+  "downloadFailures": 0,
+  "containing": {
+    "palm_tree": 20,
+    "stairs": 20,
+    "taxi": 20
+  },
+  "licenseDistribution": {
+    "CC BY 2.0": 60
+  }
+}
