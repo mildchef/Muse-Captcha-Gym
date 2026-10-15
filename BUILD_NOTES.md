@@ -600,6 +600,14 @@ other 88 checks still pass.
 
 ## STATE OF THE GYM (2026-10-10, end of the Stage 1–5 build-out)
 
+**Addendum 2026-10-14 — project paused indefinitely.** Training
+stopped on 2026-10-14 (owner decision; AI token consumption and
+operational costs). Final run: #278 under retained brief v2 (see
+TRAINING_LOG.md Closeout entry); the training cron is disabled and
+the gym servers are stopped. Frozen final results are published in
+README.md, "Performance results". The state described below is the
+2026-10-10 build-out snapshot it is dated as.
+
 **What exists**
 - The full v1 game: checkbox gate with independent challenge/token
   clocks, Type A static + dynamic, mock risk scorer (F1–F7,

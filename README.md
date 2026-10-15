@@ -1,271 +1,302 @@
 # CAPTCHA Gym
 
-**A self-hosted CAPTCHA training gym for browser agents: reCAPTCHA v2–style
-challenges with server-side ground truth, an interpretable mock risk scorer,
-and an agent-vs-human baseline recorded on the same challenges, under the
-same ruler.**
+**A self-hosted CAPTCHA training and evaluation gym for browser agents:
+reCAPTCHA v2–style challenges with server-side ground truth, an
+interpretable mock risk scorer, and an agent-vs-human baseline recorded
+on the same challenges, under the same ruler.**
 
-This gym exists so that Meta Muse agents (and any capable browser or
-computer-use agent) can train on CAPTCHA challenges, record their solving
-data, and share findings with others. It serves the full shape of the real
-thing — a checkbox gate backed by a mock risk engine, 3×3 image grids
-(static and dynamic fade-and-replace), and 4×4 grids sliced from synthetic
-scenes *and* real photographs — and scores every attempt server-side:
-per-tile true/false positives, precision/recall, exact-board rate,
-procedure errors, decision times. It answers, with data: *where exactly
-does an agent fail at these challenges — perception, procedure, or pace —
-and does a versioned play "brief" measurably move the numbers?*
+> **Project Status: Testing paused indefinitely as of October 2026 due
+> to AI token consumption and operational costs. The repository remains
+> available for reference, independent experimentation, and potential
+> future development.**
 
-> Status: training in progress, continuous mode (see
-> `TRAINING_REGIMEN.md`). The results below are a dated snapshot, not
-> final findings. A full write-up is planned when training completes.
+The evaluation environment was implemented, results were collected and
+documented, and testing then stopped for resource and cost reasons.
+The results below are the last recorded state (final run: Run #278,
+2026-10-14). The human-parity target was **not** achieved, and there is
+no scheduled date to resume testing. This is a preserved research and
+portfolio project — not an abandoned one, and not a validated
+production system.
 
-## For agents — start here
+## Overview
 
-If you are an agent operator, you can, in your own environment:
+CAPTCHA Gym exists to answer, with data: *where exactly does a browser
+agent fail at image-grid CAPTCHAs — perception, procedure, or pace —
+and do versioned written instructions measurably move the numbers?* It
+serves the full shape of the real thing — a checkbox gate backed by a
+mock risk engine, 3×3 grids (static and dynamic fade-and-replace), and
+4×4 grids sliced from synthetic scenes *and* real photographs — and
+scores every attempt server-side: per-tile true/false positives,
+precision/recall, exact-board rate, procedure errors, decision times.
+Ground truth never reaches the player.
 
-1. **Run the gym** — one file server, zero dependencies (Bootstrap below).
-2. **Play sessions** in a browser against known ground truth, under the
-   scenarios listed below.
-3. **Measure yourself** — scores are computed by the server and logged to
-   `data/attempts.jsonl`; arbitrate from that log, never from your own
-   impressions of how a round went.
+No model weights were trained or fine-tuned here. "Training" means an
+experimental loop over **versioned instruction documents** (play
+"briefs") given to a general browser agent: draft a rule from
+measured failures, validate it over a fixed sample, promote or revert
+it on the numbers.
 
-Key entry points and contracts:
+## Key capabilities
 
-- **Play doctrine:** `AGENT_BRIEF.md` — the current versioned brief is
-  how you play (tile-selection rules, sliver discipline, clock budget).
-  Play under the current version; batches record which version produced
-  them.
-- **Training protocol:** `TRAINING_REGIMEN.md` — batch composition,
-  brief governance, and the human-parity bar. Design authority:
-  `SPEC.md`.
-- **Start:** `node server.js` → play page `http://localhost:8931/`,
-  spectator dashboard `http://localhost:8931/results`.
-- **Scenarios** via query string on the play URL: `?scenario=natural`
-  (default; the risk scorer decides whether a challenge is issued),
-  `force_static`, `force_dynamic`, `force_type_b` (4×4 synthetic),
-  `force_type_b_photo` (4×4 real photographs), `force_high_trust`,
-  `force_low_trust`. Every `force_*` scenario always issues its
-  challenge; `natural` keeps the honest trust ladder.
-- **Source-tagging contract:** a session's population tag comes from
-  `?source=` at creation and is pinned to the session for all rounds.
-  Agent play uses `live-agent` (the default). Human-baseline play uses
-  `human-<name>` (lowercase alphanumerics/hyphens, e.g.
-  `?source=human-ben`) and is reserved for actual humans — an agent must
-  never tag its own sessions `human-*`; doing so corrupts both
-  baselines. Test-harness tags (`e2e`, `smoke`, `deploy-check`,
-  `leak-audit`) are neither population. Unknown or malformed values
-  fall back to `live-agent` (fail-closed).
-- **Reports:** `node tools/report.js` (one population) ·
-  `node tools/compare_report.js` (agent vs human, overall and per
-  corpus) · the `/results` dashboard defaults to agent traffic;
-  `?source=human` shows the human population.
+- **Full challenge surface:** checkbox gate with a mock risk scorer
+  (features F1–F7, jittered bands, escalation ladder); Type A 3×3
+  static and dynamic grids; Type B 4×4 grids over synthetic and
+  real-photo scenes.
+- **Server-side ground-truth evaluation:** synthetic masks are exact by
+  construction; photo masks derive from COCO 2017 annotations. A leak
+  audit asserts no ground truth escapes to any client-visible surface.
+- **Two independent clocks:** a challenge round expires after 180 s
+  (an unsubmitted selection scores zero); a minted token expires after
+  120 s and is single-use.
+- **Failure taxonomy:** every attempt is classified perception,
+  procedure (empty submission, verify-too-early, expiry), or unscored
+  (infrastructure) — "can't see" is never confused with "ran out of
+  time."
+- **Ambiguity band:** genuinely debatable tiles are excluded from
+  scoring, equally for both populations.
+- **Population separation:** agent sessions are tagged `live-agent`;
+  human sessions use a tagged `human-<name>` link, pinned at creation,
+  and are computed through the identical code path.
 
-## Bootstrap (fresh environment)
+## Architecture
 
-Requirements: **Node 20+** (standard library only). No dependencies, no
-build step, no `npm install`.
+One zero-dependency Node.js server (`server.js`, Node 20+, standard
+library only) serves the play page, the spectator dashboard
+(`/results`), the corpora, and the scoring API on port 8931. Every
+attempt is appended to `data/attempts.jsonl` with its seed, ground
+truth, risk explanation, timing, and event trace; reports are
+generated from that log by `tools/report.js` and
+`tools/compare_report.js` — never from player self-reports. The corpus
+(~340 MB) is a rebuildable build output, not committed: synthetic
+tiles and scenes come from `tools/build_corpus.js` /
+`tools/build_corpus_typeb.js`; the photo set is built by
+`tools/build_photo_corpus.js` from COCO 2017 val, admitting **only**
+CC-BY / CC-BY-SA images (637 candidates rejected on license alone) —
+120 scenes across 6 classes, with per-image provenance in
+`CREDITS.md`.
 
-The clone does **not** contain the corpus. Corpus binaries (~340 MB of
-PNG/JPEG) and the generated corpus manifests are gitignored; both are
-rebuildable outputs of the tools in `tools/`. Rebuild the synthetic
-corpus (Type A 3×3 tiles + Type B 4×4 scenes) with:
+## Performance results
+
+Final recorded state, frozen 2026-10-14. The photo corpus (Type B, 4×4
+real photographs) is the headline benchmark — the hardest corpus and
+the one the parity bar was judged on. Numbers are server-arbitrated
+from `data/attempts.jsonl` and era-split by instruction version in
+`TRAINING_LOG.md`; period: 2026-10-10 → 2026-10-14.
+
+| Version / Population | Scored Attempts | Precision | Recall | Exact-Board Accuracy | Expiries |
+|---|---|---|---|---|---|
+| Agent — brief v1 (superseded) | 8 | .949 | .881 | 3/8 (37.5%) | 2 |
+| Agent — brief v2 (**final retained**) | 1,253 | .899 | .836 | 548/1,253 (43.7%) | 89 |
+| Agent — brief v2.1 (candidate, **reverted**) | 10 | .974 | .841 | 5/10 (50.0%) | 0 |
+| Agent — brief v3 (candidate, **never deployed**) | 0 | — | — | — | — |
+| Human baseline (owner; sample too small to be statistically meaningful) | 1 photo (2 scored total) | 1.000 | 1.000 | 1/1 | 0 |
+
+**The human-parity target was not achieved.** The bar (from
+`TRAINING_REGIMEN.md`) was a rolling 30-scored-photo-attempt window at
+precision ≥ .95 **and** recall ≥ .95 **and** exact-board ≥ 90% **and**
+expiry rate ≤ 10%, sustained across two consecutive windows. The final
+rolling-30 window stood at precision **.909**, recall **.844**,
+exact-board **12/30 (40.0%)**; only the expiry rate was inside its
+limit. Read the expiry figures carefully: the v2-era rate of
+**6.6%** is 89 expired rounds ÷ **1,342 total photo rounds** — the
+1,253 scored attempts *plus* the 89 expired rounds themselves.
+Expired rounds are unscored by definition, so the denominator is all
+rounds served, not the scored-attempt count; against the 1,253 scored
+attempts alone, the same 89 expiries would read 7.1%. Exact-board
+accuracy was always the largest gap.
+
+Reading the table honestly:
+
+- **v1 → v2: a failure-mode fix, not an overall win.** In each
+  version's initial validation sample — n=8 attempts apiece, far too
+  small to rank the versions overall — precision rose .949 → 1.000
+  and exact boards 3/8 → 6/8, and v1's dominant leak (sub-sliver
+  fragment misses) dropped to zero; recall moved the other way,
+  .881 → .833, on the same samples. At full scale, v2's
+  1,253-attempt line (P .899 / R .836) sits *below* v1's small-sample
+  precision and recall, with exact-board higher (43.7% vs 37.5%).
+  What v2 verifiably improved was specific: the sliver failure mode,
+  and clock discipline — the overall expiry rate fell from 11.7% in
+  the earliest era to a stable ~6.6% (same rounds-served denominator
+  as above).
+- **v2.1 was a regression on its target and was reverted.** Its raw
+  line (n=10) looks respectable, but exact-board rate trailed v2's
+  validation pace and the whole-instance misses it was written to fix
+  did not improve. Under the governance rule — promote only if not
+  worse on precision *and* better-or-equal on the target failure mode
+  — it was rolled back as candidate failure #1.
+- **After that, volume stopped helping.** Cumulative v2 precision /
+  recall / exact-board were .912 / .849 / 46.5% at 256 attempts
+  (Run #60) and .899 / .836 / 43.7% at 1,253 attempts (Run #278). The
+  most recent 425 attempts in isolation scored .908 / .831 / 42.6% —
+  the same plateau, re-measured.
+- **The human line is an anecdote, not a baseline.** The target was
+  ≥20 scored human photo attempts; exactly **1** was ever recorded
+  (TP12 / FP0 / FN0, ~17 s decision time), plus one Type A attempt, in
+  3 sessions. No agent-vs-human conclusion should be drawn from it.
+- **Other corpora (all-era, recomputed from the attempt log):**
+  Type B synthetic — 101 attempts, P .935 / R .935, exact 66/101.
+  Type A dynamic — 149 attempts, P .966 / R .975, exact 118/149.
+  Type A static — 8 attempts, P .941 / R .842. Server logs record 890
+  agent sessions, 806 reaching a token, and 57 empty-submission plus
+  5 verify-too-early procedure errors overall.
+- **Quarantined data, kept visible:** a front-end bug on 2026-10-10
+  (18:46–18:53Z) silently discarded Type B clicks, producing 6
+  attempts scored TP0 / FP0 / FN27 — instrumentation-invalid, excluded
+  from every line above, preserved in the log. One unattributed
+  walk-in session from the same day is likewise excluded.
+- **Reconciliation note.** The era figures above are
+  `TRAINING_LOG.md`'s per-run arbitrations. Recomputing independently
+  from the raw attempt log (`data/attempts.jsonl` — filter:
+  source `live-agent`, scored verify records, photo corpus, all brief
+  eras pooled) gives 1,275 attempts (TP4972 / FP548 / FN966,
+  P .901 / R .837, exact 562/1275). Excluded from *both* computations:
+  the quarantined bug era, every human-baseline record (a separate
+  population), test-harness sources (`smoke`, `deploy-check`, `e2e`),
+  and expired or otherwise unscored rounds. The FP and FN sums match
+  the log's era totals (548 and 966) exactly; attempts differ by +4
+  and TP by +27 — four scored photo attempts present in the raw file
+  that no brief era in the log accounts for, a gap first noted at
+  Run #97 and still unresolved. The era-split log figures are the
+  published ones; nothing was adjusted to force a match.
+
+Full per-run history: [`TRAINING_LOG.md`](TRAINING_LOG.md).
+
+## The untested v3 candidate — what it was, and what it was designed to fix
+
+Brief v3 was drafted on 2026-10-11 (`BRIEF_V3_DRAFT.md`, plus
+`BRIEF_V3_ADDENDUM.md`) from the failure record above, re-arbitrated
+twice at larger scale (2026-10-13, 2026-10-14), and **never approved,
+never deployed, and never tested** — it has zero attempts and no
+results. It is documented here because its design is the project's
+clearest statement of what the data said to do next:
+
+- **Rule A — adjacency completion.** After confirming an instance,
+  sweep its four neighbour tiles for partial continuations of that
+  same object. Target: partial-fragment misses — 556 of the 966 photo
+  false negatives (slivers: another 342; fragments together are 93%
+  of all misses). V2's border sweep hunted lone slivers but
+  under-weighted continuations of already-found objects.
+- **Rule B — sparse-board restraint.** On boards with only 1–3
+  positive tiles, switch off v2's fragment-inclusion bias for new
+  tiles unless a specific object part can be named. Target:
+  over-selection — sparse boards ran precision .726 at scale (FP170
+  on TP450), the largest recoverable precision loss, against .961 on
+  crowded boards.
+- **Rule C — two-class recheck.** A targeted pre-Verify second pass
+  for the vehicle classes: cars carried roughly half of all false
+  positives (P .849); motorcycles paired P .948 with an exact-board
+  rate of only ~21%; bicycles had the worst recall of any frequent
+  class (R .761).
+- **Rule D — crowded-board census (proposed, then dropped).** The
+  addendum proposed a census on crowded boards after whole-instance
+  misses spiked to 16.2% of false negatives in one segment.
+  Re-arbitration at full scale reversed that premise: whole-instance
+  misses are only ~7% of false negatives, and crowded boards are
+  mid-pack or better on recall. The recommendation on file when
+  testing stopped was to drop Rule D.
+
+Had it been approved, v3 would have faced the same governance as
+every candidate: ≥8 scored photo attempts, era-split, promote only if
+precision is not worse *and* the target failure modes improve —
+otherwise revert as candidate failure #2. Whether it would have
+improved the plateau is unknown; the honest claim is narrower: its
+three retained rules aimed precisely at the measured loss composition
+(fragment false negatives, sparse-board false positives, vehicle-class
+errors) that no amount of additional v2 volume had moved.
+
+## Engineering decisions and tradeoffs
+
+- **Instructions as the experimental variable.** Each brief rule cites
+  the measured failure it answers to; rules that don't move numbers
+  get reverted (v2.1 is the worked example). Improvements stay
+  attributable — at the cost of a hard ceiling: a fresh player with no
+  memory of prior runs can only improve when the brief does.
+- **Era-split accounting, always.** Results are never pooled across
+  brief versions, instrumentation eras, or populations, even when
+  pooling would look better.
+- **Exact-match grading.** A board is exact or it is not — the same
+  harshness as the real thing. This multiplies per-tile error (a
+  95%-per-tile player still fails most 9-positive boards), which is
+  why exact-board lagged furthest behind the bar.
+## Quick start
+
+Requirements: Node 20+, no dependencies, no build step. The clone does
+not contain the corpus; rebuild it, then start the server:
 
 ```sh
 node tools/build_corpus.js        # Type A tiles  -> corpus/typeA/
 node tools/build_corpus_typeb.js  # Type B scenes -> corpus/typeB/
-node server.js                    # listens on 0.0.0.0:8931
+node server.js                    # http://localhost:8931/ · dashboard: /results
 ```
 
-(`PORT` and `HOST` env vars override the listen address.)
+The real-photo corpus is optional (the gym runs fully on synthetic
+alone) and requires COCO 2017 val annotations plus
+`node tools/build_photo_corpus.js`; without it, `force_type_b_photo`
+fails loudly with HTTP 503 rather than silently falling back.
+Verification suites exist (`tools/e2e_test.js`, `tools/leak_audit.js`,
+`tools/validate_corpus.js`); at the reference install on 2026-10-10
+they reported e2e 164 / 0 failed, leak audit 33 / 0, 1,880 corpus PNGs
+valid. They were **not** re-run for this closeout. Scenarios are
+selected by query string (`?scenario=` — `natural`, `force_static`,
+`force_dynamic`, `force_type_b`, `force_type_b_photo`,
+`force_high_trust`, `force_low_trust`); see `AGENT_BRIEF.md` for play
+doctrine and `SPEC.md` for the design.
 
-**Photo corpus caveat.** The gym runs fully on the synthetic corpus
-alone. The real-photo Type B transfer set is optional and requires the
-MS COCO 2017 val annotations: download `annotations_trainval2017.zip`
-from `images.cocodataset.org`, extract `instances_val2017.json` to
-`/tmp/coco/annotations/` (or set `COCO_VAL_JSON` to its path), then run
-`node tools/build_photo_corpus.js` — it also downloads the admitted
-images (CC-BY / CC-BY-SA only; see `CREDITS.md`). Without the photo
-corpus, `force_type_b_photo` fails loudly with HTTP 503
-`photo_corpus_unavailable` instead of silently falling back to
-synthetic.
+## Known limitations and unresolved challenges
 
-**Verify the install** (each tool spins up its own throwaway server or
-reads the corpus directly; none needs a running `server.js`):
+1. **Fidelity.** This is an impersonation of reCAPTCHA v2 mechanics
+   built from public research. The mock risk scorer's weights are
+   design choices; Google's are unpublished and unknowable from here,
+   and production risk decisions lean on IP/account reputation no
+   local harness can simulate.
+2. **The fragment ceiling.** Whole-tile recall was ~95%, but partial
+   tiles scored ~84% and slivers ~61% — and fragments are 75% of all
+   scored positive tiles. That perception limit, not procedure or
+   pace, is what parity died on.
+3. **The human baseline never materialized** (n=1 photo attempt
+   against a target of ≥20), so the agent-vs-human comparison the gym
+   was built to publish cannot be drawn from this data.
+4. **Finite, self-made corpus.** 120 photo scenes is a transfer probe,
+   not a distribution; results do not generalize to production CAPTCHA
+   difficulty.
+5. **Tokens minted here are meaningless outside the gym**, and
+   decision-time comparisons carry a disclosed asymmetry (the agent
+   plays through a managed browser; the human plays direct).
 
-```sh
-node tools/e2e_test.js         # end-to-end suite — expect: all checks passed, 0 failed
-node tools/leak_audit.js       # answer-key leak audit (SPEC §8.2) — expect: 0 failed
-node tools/validate_corpus.js  # corpus integrity — expect: 0 bad PNGs
-```
+## Project status and future work
 
-(Observed 2026-10-10 on the reference install: e2e 164 passed / 0
-failed, leak audit 33 passed / 0 failed, 1,880 corpus PNGs valid.)
-
-## How an agent plays a session
-
-1. Open the play URL in a browser, with `?scenario=` (and `?source=`,
-   defaulting to `live-agent`) as needed. A session begins at the
-   **checkbox gate**: click the checkbox and the mock risk scorer
-   decides — pass outright (session ends with a token), or escalate to
-   a challenge grid.
-2. **Challenge types.** Type A static 3×3: select every tile containing
-   the named class; if no tile matches, **Skip** — never guess. Type A
-   dynamic 3×3: clicked tiles fade out and are replaced after a few
-   seconds; click all matches, **wait** for replacements to settle,
-   re-scan the whole grid, click new matches, and press Verify only
-   when no tile matches anymore. Type B 4×4: a scene sliced into 16
-   tiles; select every tile containing any recognizable part of the
-   target (the brief's sliver rule); there is no Skip. A passed round
-   may be followed by another round; play until a token/success state
-   or a terminal failure state.
-3. **Two separate clocks.** A challenge round expires after **180 s**
-   (an unsubmitted selection scores zero, however good it was); a
-   minted token expires after **120 s** and is single-use.
-4. **Scoring layers.** The server scores three layers independently:
-   visual (per-tile TP/FP/FN against ground truth), procedural (empty
-   submission, verify-before-settle, expiry), and acceptance (checkbox
-   outcome, token issued). Tiles in the **ambiguity band** — target
-   overlap small enough to be genuinely debatable — are excluded from
-   scoring, equally for both populations. Failures are classified by a
-   taxonomy: perception > procedure > unscored (infrastructure).
-5. **Arbitrate from the log.** After playing, read your results from
-   `data/attempts.jsonl` (filter by your session's time window and
-   source tag). Self-reported scores are not data; the server record
-   is.
-6. **Discipline.** Play under the current `AGENT_BRIEF.md` version and
-   say which version you used when you record results. Do not modify
-   the brief, the regimen, or the logs mid-batch. And see Scope and
-   ethics: techniques learned here are for this gym only.
-
-## Corpus
-
-- **Type A (3×3):** 1,176 procedurally rendered tiles; masks exact by
-  construction.
-- **Type B synthetic (4×4):** 352 rendered scenes (480×480) with
-  per-class masks exact by construction, including 44 sliver-engineered
-  scenes whose correct tiles hold a measured 0.5–5% of a target.
-- **Type B photos (4×4):** 120 scenes from COCO 2017 val, admitted
-  **only** under CC Attribution / Attribution-ShareAlike licenses (637
-  candidate images were rejected on license alone), 6 classes
-  (bicycle, bus, motorcycle, traffic light, fire hydrant, car).
-  Per-image provenance (license, COCO id, original URL) is in
-  `corpus/typeB/manifest_photos.jsonl` once built; policy and summary
-  in `CREDITS.md`.
-
-Ground truth never reaches the player through the game channel: all
-scoring is server-side, tile images carry no identifiers, and the leak
-audit crawls every client-visible surface asserting no ground truth
-leaks via filenames, DOM, or metadata.
-
-## Training system and governance
-
-The agent plays from a **versioned written brief** (`AGENT_BRIEF.md`);
-each rule in a brief cites the measured failure it answers to. The loop:
-
-1. Play a batch under the current brief per `TRAINING_REGIMEN.md`
-   (continuous mode: hourly runs, 2 photo sessions + 1 rotating).
-2. Arbitrate every attempt from `data/attempts.jsonl`.
-3. Name the dominant failure mode; draft the next brief version from it.
-4. **Validate the candidate over ≥8 scored photo attempts.** Promote it
-   if it is not worse on precision and better or equal on the failure
-   mode it was written to fix; otherwise revert and record why, in
-   `TRAINING_LOG.md`. Rules that don't move numbers get reverted.
-
-**Human-parity bar** (from `TRAINING_REGIMEN.md`, quoted exactly):
-judged on scored photo attempts, rolling window of the last **30
-scored photo attempts** — **precision ≥ 0.95 AND recall ≥ 0.95 AND
-exact-board ≥ 90% AND expiry rate ≤ 10%**, sustained across **two
-consecutive windows**. Decision time is reported but does not gate
-parity (the agent plays through a managed browser; the human plays
-direct). A stall brake applies: three consecutive candidate briefs
-failing to improve on their target failure mode stops new drafting and
-reports the stall.
-
-**Agent vs human.** Human sessions are tagged `human-<name>` and
-computed through the identical code path (`tools/compare_report.js`);
-see `HUMAN_BASELINE.md` for the protocol and publication notes.
-Disclosed asymmetries: the agent's decision times include managed-
-browser/screenshot latency; the mock risk engine cannot replicate
-production IP/account reputation. Publication target for the human
-line: ≥10 human photo sessions (≥20 scored photo attempts).
-
-The scoreboard already contains one instrumentation-invalid era (a
-front-end bug that made every Type B submission empty) — kept,
-quarantined, and labeled in `TRAINING_LOG.md`, because a benchmark
-that hides its bad data isn't one.
-
-## Install as a Muse skill
-
-This repo doubles as a Muse skill. Clone it into your workspace
-skills directory and the receiving agent gets the gym plus its play
-doctrine as a loadable skill:
-
-```sh
-git clone <this-repo-url> ~/workspace/skills/captcha-gym
-```
-
-What the receiving agent gets: `SKILL.md` (operating instructions:
-install, start, play under the brief, record results, parity bar,
-ethics limits), the full gym (`server.js`, `tools/`, `public/`), the
-current `AGENT_BRIEF.md`, and the training protocol in
-`TRAINING_REGIMEN.md`. The corpus still has to be rebuilt locally
-(Bootstrap above) — it is not in the clone.
-
-## Results snapshot — 2026-10-10
-
-Photo corpus, scored attempts, era-split (from `TRAINING_LOG.md`):
-
-| Population / brief | Attempts | Precision | Recall | Exact board | Expiries |
-|---|---|---|---|---|---|
-| Agent, brief v1 | 8 | .949 | .881 | 3/8 | 2 |
-| Agent, brief v2 | 8 | 1.000 | .833 | 6/8 | 2 |
-| Agent, brief v2.1 (candidate) | 5 | .923 | .857 | 3/5 | 0 |
-| Human (opening sessions) | 2 | 1.000 | 1.000 | 2/2 | 0 |
-
-Read small samples as small samples. The v1→v2 story so far is
-compositional: v2 eliminated sliver misses entirely (v1's main leak)
-and doubled exact boards, while exposing whole-instance misses on
-crowded scenes — which is what v2.1's census rule exists to fix, and
-what it is currently being validated on.
-
-## Fidelity limits — read before citing
-
-1. This is an *impersonation* of reCAPTCHA v2 mechanics, built from
-   public research. The mock risk scorer's weights are design choices;
-   Google's are unpublished and unknowable from here.
-2. The corpus is finite and self-made; production draws on a vast,
-   shifting corpus with deliberately ambiguous items.
-3. Production risk decisions lean on IP/account reputation at a scale
-   no local harness can simulate; the gym stubs it as a per-profile
-   feature.
-4. Tokens minted here are meaningless outside the gym.
+Testing is paused indefinitely (see the status box at the top); the
+training cron is disabled and the gym servers are stopped. The frozen
+record is: 278 logged training runs, a final retained brief of **v2**,
+one reverted candidate (v2.1), one untested candidate (v3), and the
+parity target unachieved. If work resumes, the documented next steps
+are, in order: a ruling on validating brief v3 (Rules A + B + C as
+drafted, Rule D dropped), banking a real human baseline, and only
+then re-evaluating the parity bar. The graduation path planned for a
+successful outcome — folding the final validated brief into
+`SKILL.md` as a shipped technique and retiring to regression-only
+training — was never triggered.
 
 ## Scope and ethics
 
 The gym trains and evaluates **your own agent, on your own site**. It
 is not a CAPTCHA-solving service, must never be pointed at third-party
 sites, and nothing here interoperates with real reCAPTCHA (no Google
-JS, no sitekeys, no token injection). An agent's standing instructions
-for real sites are a separate, user-controlled setting. Human-baseline
-play is by the project's owner, recorded with consent, published in
-aggregate.
+JS, no sitekeys, no token injection). Human-baseline play is by the
+project's owner, recorded with consent, and published in aggregate
+only.
 
-## Repository layout
+## Documentation
 
-- `server.js` — the whole server (Node stdlib only)
-- `public/` — the player-facing page and dashboard client
-- `tools/` — corpus builders (`build_corpus.js`, `build_corpus_typeb.js`,
-  `build_photo_corpus.js`), `e2e_test.js`, `leak_audit.js`,
-  `validate_corpus.js`, `report.js`, `compare_report.js`, ops scripts
-- `SKILL.md` — the gym as a Muse skill · `AGENTS.md` — agent quick
-  reference
-- `SPEC.md` — design authority · `BUILD_NOTES.md` — the build journal
-- `AGENT_BRIEF.md` — the versioned play briefs ·
-  `TRAINING_REGIMEN.md` / `TRAINING_LOG.md` — protocol and scoreboard
-- `HUMAN_BASELINE.md` — human protocol and publication notes ·
-  `CREDITS.md` — corpus licensing and attribution
+`SPEC.md` — design authority · `BUILD_NOTES.md` — build journal ·
+`AGENT_BRIEF.md` — versioned play briefs (v2 final; v2.1 reverted) ·
+`BRIEF_V3_DRAFT.md` / `BRIEF_V3_ADDENDUM.md` — the untested candidate,
+held out of the published repository pending an owner ruling ·
+`TRAINING_REGIMEN.md` — protocol and parity bar · `TRAINING_LOG.md` —
+full scoreboard (278 runs) · `HUMAN_BASELINE.md` — human protocol ·
+`CREDITS.md` — corpus licensing · `SKILL.md` — the gym as a Muse
+skill · `AGENTS.md` — house rules.
 
 ## License
 
