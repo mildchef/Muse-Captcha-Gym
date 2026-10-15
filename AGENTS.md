@@ -1,5 +1,11 @@
 # AGENTS.md — CAPTCHA Gym
 
+> **Project paused indefinitely as of October 14, 2026. Do not initiate
+> training, evaluation sessions, browser automation, or restart the gym
+> without explicit owner authorization.**
+>
+> The operating instructions below are preserved for reference.
+
 A self-hosted training and evaluation gym for reCAPTCHA v2–style
 challenges, with server-side ground truth and an agent-vs-human
 baseline. Full documentation: `README.md`. Play doctrine:
@@ -11,12 +17,13 @@ authority: `SPEC.md`.
 ```sh
 node tools/build_corpus.js        # Type A corpus (not in the clone)
 node tools/build_corpus_typeb.js  # Type B synthetic corpus
-node server.js                    # 0.0.0.0:8931, Node 20+, zero deps
+HOST=127.0.0.1 node server.js     # 127.0.0.1:8931, Node 20+, zero deps
 ```
 
-Play page: `http://localhost:8931/` · Dashboard:
-`http://localhost:8931/results`. Photo corpus is optional (needs COCO
-val2017 annotations — see README "Bootstrap"); without it,
+Without `HOST`, the server binds `0.0.0.0` (the application default).
+Play page: `http://127.0.0.1:8931/` · Dashboard:
+`http://127.0.0.1:8931/results`. Photo corpus is optional (needs COCO
+val2017 annotations — see README "Quick start"); without it,
 `force_type_b_photo` returns 503 and everything else works.
 
 Verify: `node tools/e2e_test.js` · `node tools/leak_audit.js` ·

@@ -1,12 +1,8 @@
 # CAPTCHA Gym
 
 **A self-hosted evaluation platform for browser agents: controlled
-reCAPTCHA v2–style visual challenges, server-side scoring against
-ground truth the player never sees, an interpretable mock risk scorer,
-and documented results from 278 logged training runs. Human sessions
-can be scored through the same code path, but only one scored human
-photo attempt was ever recorded, so no statistically meaningful human
-baseline exists.**
+reCAPTCHA v2–style visual challenges, server-side scoring, and
+documented results from 278 training runs.**
 
 > **Project Status: Testing paused indefinitely as of October 2026 due
 > to AI token consumption and operational costs. The repository remains
@@ -168,7 +164,8 @@ Full per-run history: [`TRAINING_LOG.md`](TRAINING_LOG.md).
 ## The untested v3 candidate — what it was, and what it was designed to fix
 
 Brief v3 was drafted on 2026-10-11 (`BRIEF_V3_DRAFT.md`, plus
-`BRIEF_V3_ADDENDUM.md`) from the failure record above, re-arbitrated
+`BRIEF_V3_ADDENDUM.md`; both are unpublished local drafts, not
+included in this repository) from the failure record above, re-arbitrated
 twice at larger scale (2026-10-13, 2026-10-14), and **never approved,
 never deployed, and never tested** — it has zero attempts and no
 results. It is documented here because its design is the project's
