@@ -1,5 +1,16 @@
 # CAPTCHA Gym — standing training regimen
 
+> **STATUS — PAUSED INDEFINITELY (Ben, 2026-10-14).** Continuous
+> training stopped on 2026-10-14 due to AI token consumption and
+> operational costs. The `captcha-gym-training-batch` cron is DISABLED
+> and the gym servers are stopped. Do not run batches, revive the gym,
+> or play sessions under this regimen until Ben explicitly resumes it.
+> Final recorded state: Run #278 — see the Closeout entry in
+> TRAINING_LOG.md and "Performance results" in README.md. This
+> document is retained as the protocol of record for the completed
+> training era; everything below describes how training ran, not an
+> active schedule.
+
 Owner: chocco. Original approval: Ben 2026-10-10 ("Go for it!").
 **Continuous mode approved by Ben 2026-10-10: "train 24/7 until the
 agents reach human level."** This document supersedes the Mon/Wed/Fri
@@ -98,18 +109,32 @@ owner directs otherwise. Grinding folklore forever is not training.
   runs — folklore doesn't graduate.
 
 ## Reporting
+- LANGUAGE — ENGLISH ONLY: every chat report and twice-daily summary
+  sent to Ben must be written entirely in English, with English
+  headings and labels. This applies regardless of the language used
+  in TRAINING_LOG.md, tracking entries, or prior summaries (many are
+  in Spanish — do not mirror them). Ben corrected this repeatedly on
+  2026-10-11 and again on 2026-10-12 ("English"), yet the
+  2026-10-12 AM summary was still delivered in Spanish; that must
+  not recur, including the 2026-10-12 PM summary.
 - Append every run's numbers to TRAINING_LOG.md: run #, brief
   version(s), sessions/tokens, scored attempts per corpus with TP/FP/FN,
   precision/recall/exact-board (run + running per-brief totals),
   expiries, infra incidents, dominant failure mode in one line, and the
   current parity-window status. Era-split always; checkbox-only
   sessions count as tokens but never as perception data.
-- Chat reports in the originating chat ONLY on a trigger:
+- Chat reports in the originating chat on an immediate trigger —
   (a) PARITY declared, (b) a brief promoted or reverted, (c) the stall
-  brake firing, (d) a run that could not play because the gym could not
-  be revived, (e) the first run after 9:00 AM Pacific each day, which
-  carries a 24-hour digest (attempts banked, per-brief lines, parity
-  distance, human-line n). Routine runs end with result summary
+  brake firing, or (d) a run that could not play because the gym could
+  not be revived — and as a twice-daily summary (Ben, 2026-10-11:
+  twice a day for now). Summaries are due on the first completed run
+  after 9:00 AM and the first completed run after 9:00 PM Pacific;
+  they cover activity since the previous summary (attempts banked,
+  cumulative and rolling-30 per-brief lines, expiries, parity distance,
+  dominant failure mode, notable incidents, human-line n). The sending
+  run records `Summary delivered: YYYY-MM-DD AM` or
+  `Summary delivered: YYYY-MM-DD PM` in TRAINING_LOG.md to prevent
+  duplicates. Other routine runs end with result summary
   "no reportable events" and no user-facing message.
 - If the gym cannot be revived, report that instead of playing — never
   fabricate a batch.
