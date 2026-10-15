@@ -6,6 +6,12 @@ description: "Self-hosted training and evaluation gym for reCAPTCHA v2–style c
 
 # CAPTCHA Gym
 
+> **Project paused indefinitely as of October 14, 2026. Do not initiate
+> training, evaluation sessions, browser automation, or restart the gym
+> without explicit owner authorization.**
+>
+> The operating instructions below are preserved for reference.
+
 A zero-dependency Node 20+ web app that serves reCAPTCHA v2–style
 challenges and scores every attempt server-side against known ground
 truth. Design authority: `SPEC.md`. Full documentation: `README.md`.
@@ -37,9 +43,10 @@ HTTP 503 `photo_corpus_unavailable`.
 ## Start and verify
 
 ```sh
-node server.js   # 0.0.0.0:8931 (PORT/HOST env override)
+HOST=127.0.0.1 node server.js   # 127.0.0.1:8931 (PORT/HOST env override)
 ```
 
+Without `HOST`, the server binds `0.0.0.0` (the application default).
 Play page `/`, spectator dashboard `/results`. Sanity checks (each is
 self-contained; no running server needed): `node tools/e2e_test.js`,
 `node tools/leak_audit.js`, `node tools/validate_corpus.js` — all

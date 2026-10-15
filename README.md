@@ -1,9 +1,8 @@
 # CAPTCHA Gym
 
-**A self-hosted CAPTCHA training and evaluation gym for browser agents:
-reCAPTCHA v2–style challenges with server-side ground truth, an
-interpretable mock risk scorer, and an agent-vs-human baseline recorded
-on the same challenges, under the same ruler.**
+**A self-hosted evaluation platform for browser agents: controlled
+reCAPTCHA v2–style visual challenges, server-side scoring, and
+documented results from 278 training runs.**
 
 > **Project Status: Testing paused indefinitely as of October 2026 due
 > to AI token consumption and operational costs. The repository remains
@@ -73,7 +72,7 @@ tiles and scenes come from `tools/build_corpus.js` /
 `tools/build_photo_corpus.js` from COCO 2017 val, admitting **only**
 CC-BY / CC-BY-SA images (637 candidates rejected on license alone) —
 120 scenes across 6 classes, with per-image provenance in
-`CREDITS.md`.
+[`CREDITS.md`](CREDITS.md).
 
 ## Performance results
 
@@ -81,7 +80,7 @@ Final recorded state, frozen 2026-10-14. The photo corpus (Type B, 4×4
 real photographs) is the headline benchmark — the hardest corpus and
 the one the parity bar was judged on. Numbers are server-arbitrated
 from `data/attempts.jsonl` and era-split by instruction version in
-`TRAINING_LOG.md`; period: 2026-10-10 → 2026-10-14.
+[`TRAINING_LOG.md`](TRAINING_LOG.md); period: 2026-10-10 → 2026-10-14.
 
 | Version / Population | Scored Attempts | Precision | Recall | Exact-Board Accuracy | Expiries |
 |---|---|---|---|---|---|
@@ -92,7 +91,7 @@ from `data/attempts.jsonl` and era-split by instruction version in
 | Human baseline (owner; sample too small to be statistically meaningful) | 1 photo (2 scored total) | 1.000 | 1.000 | 1/1 | 0 |
 
 **The human-parity target was not achieved.** The bar (from
-`TRAINING_REGIMEN.md`) was a rolling 30-scored-photo-attempt window at
+[`TRAINING_REGIMEN.md`](TRAINING_REGIMEN.md)) was a rolling 30-scored-photo-attempt window at
 precision ≥ .95 **and** recall ≥ .95 **and** exact-board ≥ 90% **and**
 expiry rate ≤ 10%, sustained across two consecutive windows. The final
 rolling-30 window stood at precision **.909**, recall **.844**,
@@ -146,7 +145,7 @@ Reading the table honestly:
   from every line above, preserved in the log. One unattributed
   walk-in session from the same day is likewise excluded.
 - **Reconciliation note.** The era figures above are
-  `TRAINING_LOG.md`'s per-run arbitrations. Recomputing independently
+  [`TRAINING_LOG.md`](TRAINING_LOG.md)'s per-run arbitrations. Recomputing independently
   from the raw attempt log (`data/attempts.jsonl` — filter:
   source `live-agent`, scored verify records, photo corpus, all brief
   eras pooled) gives 1,275 attempts (TP4972 / FP548 / FN966,
@@ -165,7 +164,8 @@ Full per-run history: [`TRAINING_LOG.md`](TRAINING_LOG.md).
 ## The untested v3 candidate — what it was, and what it was designed to fix
 
 Brief v3 was drafted on 2026-10-11 (`BRIEF_V3_DRAFT.md`, plus
-`BRIEF_V3_ADDENDUM.md`) from the failure record above, re-arbitrated
+`BRIEF_V3_ADDENDUM.md`; both are unpublished local drafts, not
+included in this repository) from the failure record above, re-arbitrated
 twice at larger scale (2026-10-13, 2026-10-14), and **never approved,
 never deployed, and never tested** — it has zero attempts and no
 results. It is documented here because its design is the project's
@@ -227,8 +227,18 @@ not contain the corpus; rebuild it, then start the server:
 ```sh
 node tools/build_corpus.js        # Type A tiles  -> corpus/typeA/
 node tools/build_corpus_typeb.js  # Type B scenes -> corpus/typeB/
-node server.js                    # http://localhost:8931/ · dashboard: /results
+HOST=127.0.0.1 node server.js     # http://127.0.0.1:8931/ · dashboard: /results
 ```
+
+**Security boundary.** This is an experimental environment, not a
+hardened service. `server.js` binds `0.0.0.0` unless `HOST` is set, and
+nothing it serves is authenticated — including the admin endpoints
+under `/api/admin/` (`POST /api/admin/reset` clears all in-memory
+sessions and tokens). Do not expose it directly to untrusted networks
+without adding your own access controls. The bundled reverse-tunnel
+helper (`tools/tunnel.sh`, `systemd/captcha-gym-tunnel.service`,
+enabled by `tools/install_services.sh`) publishes the server at a
+public URL and falls under the same caution.
 
 The real-photo corpus is optional (the gym runs fully on synthetic
 alone) and requires COCO 2017 val annotations plus
@@ -240,8 +250,9 @@ they reported e2e 164 / 0 failed, leak audit 33 / 0, 1,880 corpus PNGs
 valid. They were **not** re-run for this closeout. Scenarios are
 selected by query string (`?scenario=` — `natural`, `force_static`,
 `force_dynamic`, `force_type_b`, `force_type_b_photo`,
-`force_high_trust`, `force_low_trust`); see `AGENT_BRIEF.md` for play
-doctrine and `SPEC.md` for the design.
+`force_high_trust`, `force_low_trust`); see
+[`AGENT_BRIEF.md`](AGENT_BRIEF.md) for play doctrine and
+[`SPEC.md`](SPEC.md) for the design.
 
 ## Known limitations and unresolved challenges
 
@@ -275,7 +286,7 @@ are, in order: a ruling on validating brief v3 (Rules A + B + C as
 drafted, Rule D dropped), banking a real human baseline, and only
 then re-evaluating the parity bar. The graduation path planned for a
 successful outcome — folding the final validated brief into
-`SKILL.md` as a shipped technique and retiring to regression-only
+[`SKILL.md`](SKILL.md) as a shipped technique and retiring to regression-only
 training — was never triggered.
 
 ## Scope and ethics
@@ -289,16 +300,20 @@ only.
 
 ## Documentation
 
-`SPEC.md` — design authority · `BUILD_NOTES.md` — build journal ·
-`AGENT_BRIEF.md` — versioned play briefs (v2 final; v2.1 reverted) ·
+[`SPEC.md`](SPEC.md) — design authority ·
+[`BUILD_NOTES.md`](BUILD_NOTES.md) — build journal ·
+[`AGENT_BRIEF.md`](AGENT_BRIEF.md) — versioned play briefs (v2 final;
+v2.1 reverted) ·
 `BRIEF_V3_DRAFT.md` / `BRIEF_V3_ADDENDUM.md` — the untested candidate,
 held out of the published repository pending an owner ruling ·
-`TRAINING_REGIMEN.md` — protocol and parity bar · `TRAINING_LOG.md` —
-full scoreboard (278 runs) · `HUMAN_BASELINE.md` — human protocol ·
-`CREDITS.md` — corpus licensing · `SKILL.md` — the gym as a Muse
-skill · `AGENTS.md` — house rules.
+[`TRAINING_REGIMEN.md`](TRAINING_REGIMEN.md) — protocol and parity bar ·
+[`TRAINING_LOG.md`](TRAINING_LOG.md) — full scoreboard (278 runs) ·
+[`HUMAN_BASELINE.md`](HUMAN_BASELINE.md) — human protocol ·
+[`CREDITS.md`](CREDITS.md) — corpus licensing ·
+[`SKILL.md`](SKILL.md) — the gym as a Muse skill ·
+[`AGENTS.md`](AGENTS.md) — house rules.
 
 ## License
 
-MIT — see `LICENSE`. Photo-corpus images remain under their original
-CC licenses (see `CREDITS.md`).
+MIT — see [`LICENSE`](LICENSE). Photo-corpus images remain under their
+original CC licenses (see [`CREDITS.md`](CREDITS.md)).
